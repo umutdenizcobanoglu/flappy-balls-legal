@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Delete Flappy Balls Account</title>
+  <meta name="description" content="Delete your Flappy Balls account and associated online game data.">
+  <style>
+    :root{color-scheme:light dark}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;max-width:760px;margin:0 auto;padding:32px 20px 64px;line-height:1.55}
+    h1{line-height:1.2}
+    .card{border:1px solid rgba(127,127,127,.35);border-radius:16px;padding:20px;margin:20px 0}
+    label{display:block;margin:14px 0 6px;font-weight:600}
+    input{width:100%;box-sizing:border-box;padding:12px;border-radius:10px;border:1px solid rgba(127,127,127,.5);font:inherit}
+    button{margin-top:18px;padding:12px 16px;border:0;border-radius:10px;font:inherit;font-weight:700;cursor:pointer;background:#d32f2f;color:white}
+    button:disabled{opacity:.55;cursor:not-allowed}
+    .muted{opacity:.75}
+    .status{margin-top:16px;padding:12px;border-radius:10px;background:rgba(127,127,127,.12);white-space:pre-wrap}
+    .danger{color:#b71c1c}
+    hr{border:0;border-top:1px solid rgba(127,127,127,.35);margin:36px 0}
+  </style>
+</head>
+<body>
+  <h1>Delete Flappy Balls Account</h1>
+  <p class="muted">This page lets you request deletion of your Flappy Balls account without reinstalling the app.</p>
+
+  <div class="card">
+    <h2>What will be deleted</h2>
+    <ul>
+      <li>Your Firebase sign-in account for Flappy Balls</li>
+      <li>Your Flappy Balls online profile and leaderboard record</li>
+      <li>Your server-side run and ad-transaction records associated with the account</li>
+    </ul>
+    <p>Some limited records may be retained only where required for security, fraud prevention, legal obligations, or platform purchase records, as described in the Privacy Policy.</p>
+  </div>
+
+  <div class="card">
+    <h2>Delete your account</h2>
+    <p>Enter the same email address and password you use to sign in to Flappy Balls. Your password is sent directly to Google Firebase Authentication and is not stored by this page.</p>
+    <form id="deleteForm">
+      <label for="email">Email</label>
+      <input id="email" type="email" autocomplete="email" required maxlength="254">
+
+      <label for="password">Password</label>
+      <input id="password" type="password" autocomplete="current-password" required minlength="6" maxlength="128">
+
+      <label style="font-weight:400">
+        <input id="confirm" type="checkbox" required style="width:auto;margin-right:8px">
+        I understand that account deletion is permanent.
+      </label>
+
+      <button id="deleteButton" type="submit">Permanently delete my account</button>
+    </form>
+    <div id="status" class="status" hidden></div>
+  </div>
+
+  <p><a href="privacy-policy.html">Flappy Balls Privacy Policy</a></p>
+
+  <hr>
+
+  <section lang="tr">
+    <h1>Flappy Balls Hesabını Sil</h1>
+    <p>Bu sayfa, uygulamayı yeniden yüklemeden Flappy Balls hesabının silinmesini istemene olanak tanır. Yukarıdaki forma oyunda kullandığın e-posta ve şifreyi girip silme işlemini onaylayabilirsin.</p>
+    <p>Silme işlemi Firebase hesabını, çevrimiçi profilini, leaderboard kaydını ve hesabınla ilişkilendirilmiş sunucu kayıtlarını siler. Güvenlik, dolandırıcılık önleme, yasal zorunluluklar veya platform satın alma kayıtları için gerekli sınırlı kayıtlar ilgili politika kapsamında tutulabilir.</p>
+  </section>
+
+<script>
+(() => {
+  const API_KEY = "AIzaSyAfwspAvpByvqNOdB83wspA9iJA2dkxdZo";
+  const GAME_API = "https://europe-west3-flappy-balls-5b1d7.cloudfunctions.net/gameApi";
+
+  const form = document.getElementById('deleteForm');
+  const button = document.getElementById('deleteButton');
+  const status = document.getElementById('status');
+
+  function show(message, ok=false){
+    status.hidden = false;
+    status.textContent = message;
+    status.style.color = ok ? 'inherit' : '#d32f2f';
+  }
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    button.disabled = true;
+    status.hidden = true;
+
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+
+    try {
+      const authResponse = await fetch(
+        'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=' + encodeURIComponent(API_KEY),
+        {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({email, password, returnSecureToken:true})
+        }
+      );
+      const authData = await authResponse.json();
+      if (!authResponse.ok) {
+        const code = authData?.error?.message || 'AUTHENTICATION_FAILED';
+        throw new Error('Could not sign in: ' + code);
+      }
+
+      const deleteResponse = await fetch(GAME_API + '/deleteAccount', {
+        method: 'POST',
+        headers: {
+          'Content-Type':'application/json',
+          'Authorization':'Bearer ' + authData.idToken
+        },
+        body: '{}'
+      });
+      const deleteData = await deleteResponse.json().catch(() => ({}));
+      if (!deleteResponse.ok) {
+        throw new Error(deleteData?.error || 'ACCOUNT_DELETION_FAILED');
+      }
+
+      form.reset();
+      show('Your Flappy Balls account deletion has been completed. / Flappy Balls hesabın silindi.', true);
+    } catch (error) {
+      show(error.message || 'Account deletion failed. Please try again.');
+    } finally {
+      button.disabled = false;
+      document.getElementById('password').value = '';
+    }
+  });
+})();
+</script>
+</body>
+</html>
