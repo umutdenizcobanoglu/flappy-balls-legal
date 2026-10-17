@@ -131,7 +131,7 @@ button:disabled{cursor:default;opacity:.55}button,.ball-card,header h2{overflow-
 @media(orientation:landscape){.intro-art{background-position:20% center}.intro-caption{left:52%;right:3%;bottom:18%;padding:0;}.intro-prompt{font-size:14px;}}
 </style></head>
 <body><main id="app"><canvas id="game" aria-label="Flappy Balls game"></canvas><div id="hud" hidden><button id="pause" aria-label="Pause">Ⅱ</button><div class="score-stack"><strong id="score">0</strong><small id="speed"></small></div><span class="pill coin" id="run-coins">● 0</span></div><section id="screen"></section><div id="toast" role="status"></div><div id="save-warning" hidden>Storage unavailable · progress may not be saved</div></main><script>// App release metadata is separate from the saved-flight/server physics version.
-const APP = Object.freeze({version:'1.10.9',versionCode:20});
+const APP = Object.freeze({version:'1.10.10',versionCode:21});
 
 const GAME = Object.freeze({width:1080,height:1920,step:1/60,radius:48,playerX:290,gravity:2100,jump:-720,initialSpeed:405,maxSpeed:2025,speedPerScore:7,speedPerSecond:1.1,initialGap:510,minGap:380,gapPerScore:2,spacing:800,minSpacing:680,maxSpacing:820,gapJitter:32,obstacleWidth:150,margin:160,maxCenterChange:280,maxTicks:108000,version:6});
 const ONLINE = Object.freeze({projectId:'flappy-balls-5b1d7',apiKey:'AIzaSyAfwspAvpByvqNOdB83wspA9iJA2dkxdZo',baseUrl:'https://europe-west3-flappy-balls-5b1d7.cloudfunctions.net/gameApi',enabled:true});
@@ -3622,7 +3622,7 @@ class FrameClock {
 
 
 const KEY='flappy-balls-save-v1',BACKUP=KEY+'-backup';
-const fresh=()=>({version:1,best:0,coins:0,unlocked:['black'],selected:'black',sound:true,music:true,language:initialLanguage(),country:null,selectedCountry:null,ownedCosmetics:[],premiumOwned:[],premiumUid:null,chestCredits:{},equipped:{hat:null,accessory:null},name:'BallPlayer'+Math.floor(1000+Math.random()*9000),pending:[],draft:null,active:null,deaths:0});
+const fresh=()=>({version:1,best:0,coins:0,unlocked:['black','hopewing'],selected:'hopewing',sound:true,music:true,language:initialLanguage(),country:null,selectedCountry:null,ownedCosmetics:[],premiumOwned:[],premiumUid:null,chestCredits:{},equipped:{hat:null,accessory:null},name:'BallPlayer'+Math.floor(1000+Math.random()*9000),pending:[],draft:null,active:null,deaths:0});
 const validInputs=r=>r&&typeof r==='object'&&Number.isInteger(r.ticks)&&r.ticks>=0&&r.ticks<=GAME.maxTicks&&Array.isArray(r.flaps)&&r.flaps.length<=r.ticks&&r.flaps.every((t,i)=>Number.isInteger(t)&&t>=0&&t<r.ticks&&(!i||t>r.flaps[i-1]))&&(r.reviveTick==null||(Number.isInteger(r.reviveTick)&&r.reviveTick>0&&r.reviveTick<=r.ticks));
 const validRun=r=>validInputs(r)&&/^[a-f0-9]{32}$/.test(r.id)&&r.ticks>0&&[3,4,5,GAME.version].includes(r.version);
 const validActive=r=>validInputs(r)&&[2,3,4,5,GAME.version].includes(r.version)&&Number.isInteger(r.seed)&&r.seed>=0&&r.seed<=4294967295&&Number.isFinite(r.savedAt);
@@ -3630,7 +3630,7 @@ const integer=(n,max=1e9)=>Number.isSafeInteger(n)&&n>=0&&n<=max?n:0;
 class SaveManager {
  constructor(storage){this.warning=false;this.lastGood=null;this.db=null;this.updatedAt=0;try{this.storage=storage??globalThis.localStorage;}catch{this.storage=null;this.warning=true;}this.data=this.read();}
  parse(text){const d=JSON.parse(text);if(!d||d.version!==1)throw Error('Invalid save');const f=fresh(),ids=new Set(BALLS.map(c=>c.id));
-  f.best=integer(d.best);f.coins=integer(d.coins);f.deaths=integer(d.deaths);f.unlocked=[...new Set(['black',...(Array.isArray(d.unlocked)?d.unlocked.filter(id=>ids.has(id)):[])])];f.selected=f.unlocked.includes(d.selected)?d.selected:'black';f.sound=d.sound!==false;f.music=d.music!==false;f.name=validName(d.name)?d.name:f.name;
+  f.best=integer(d.best);f.coins=integer(d.coins);f.deaths=integer(d.deaths);f.unlocked=[...new Set(['black','hopewing',...(Array.isArray(d.unlocked)?d.unlocked.filter(id=>ids.has(id)):[])])];f.selected=f.unlocked.includes(d.selected)?d.selected:'black';f.sound=d.sound!==false;f.music=d.music!==false;f.name=validName(d.name)?d.name:f.name;
   f.language=LANGUAGES.some(l=>l.id===d.language)?d.language:f.language;f.country=/^[A-Z]{2}$/.test(d.country||'')?d.country:null;
   f.selectedCountry=validSelectedCountry(d.selectedCountry)?d.selectedCountry:null;
   f.ownedCosmetics=[...new Set(Array.isArray(d.ownedCosmetics)?d.ownedCosmetics.filter(id=>cosmeticById(id)&&!cosmeticById(id).premium):[])];
@@ -3684,9 +3684,14 @@ function validName(name){return typeof name==='string'&&/^[A-Za-z0-9_]{3,16}$/.t
 
 
 class Renderer {
- constructor(canvas){this.canvas=canvas;this.ctx=canvas.getContext('2d');this.images={};this.cosmeticImages={};for(const item of COSMETICS){const img=new Image();img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(cosmeticSvg(item.id));this.cosmeticImages[item.id]=img;}this.effects=[];this.effectPool=[];this.lastDraw=null;this.shades=new Map();for(const c of BALLS){if(c.flag||c.sprite){const img=new Image();img.src=ballAsset(c.id)||FLAG_ASSETS[c.id];this.images[c.id]=img;}}this.resize();window.addEventListener('resize',()=>this.resize());}
- resize(){const r=this.canvas.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);this.canvas.width=r.width*d;this.canvas.height=r.height*d;this.sx=this.sy=Math.min(this.canvas.width/GAME.width,this.canvas.height/GAME.height);this.background=null;this.gateGradient=null;this.shades.clear();this.ox=(this.canvas.width-GAME.width*this.sx)/2;this.oy=(this.canvas.height-GAME.height*this.sy)/2;}
- ball(x,y,r,id,rotation=0,cosmetics={}){const c=this.ctx;c.save();c.translate(x,y);c.rotate(rotation);c.shadowColor='#71ffd360';c.shadowBlur=22;c.beginPath();c.arc(0,0,r,0,Math.PI*2);c.fillStyle='#080c17';c.fill();c.shadowBlur=0;c.save();c.clip();const img=this.images[id];if(img?.complete&&img.naturalWidth){const ar=img.naturalWidth/img.naturalHeight;c.drawImage(img,-r*ar,-r,r*2*ar,r*2);}let g=this.shades.get(r);if(!g){g=c.createRadialGradient(-r*.4,-r*.4,0,0,0,r*1.1);g.addColorStop(0,'#ffffff55');g.addColorStop(.45,'#ffffff00');g.addColorStop(1,'#00000066');this.shades.set(r,g);}c.fillStyle=g;c.fillRect(-r,-r,2*r,2*r);c.restore();c.strokeStyle='#eefaff';c.lineWidth=5;c.stroke();for(const slot of ['accessory','hat']){const overlay=this.cosmeticImages[cosmetics[slot]];if(overlay?.complete&&overlay.naturalWidth)c.drawImage(overlay,-2*r,-2.4*r,4*r,4*r);}c.restore();}
+ constructor(canvas){this.canvas=canvas;this.ctx=canvas.getContext('2d');this.images={};this.cosmeticImages={};this.ballSprites=new Map();for(const item of COSMETICS){const img=new Image();img.onload=()=>this.ballSprites.clear();img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(cosmeticSvg(item.id));this.cosmeticImages[item.id]=img;}this.effects=[];this.effectPool=[];this.lastDraw=null;this.shades=new Map();for(const c of BALLS){if(c.flag||c.sprite){const img=new Image();img.onload=()=>this.ballSprites.clear();img.src=ballAsset(c.id)||FLAG_ASSETS[c.id];this.images[c.id]=img;}}this.resize();window.addEventListener('resize',()=>this.resize());}
+ resize(){const r=this.canvas.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,1.5,Math.sqrt(720000/Math.max(1,r.width*r.height)));this.canvas.width=r.width*d;this.canvas.height=r.height*d;this.sx=this.sy=Math.min(this.canvas.width/GAME.width,this.canvas.height/GAME.height);this.background=null;this.gateGradient=null;this.shades.clear();this.ox=(this.canvas.width-GAME.width*this.sx)/2;this.oy=(this.canvas.height-GAME.height*this.sy)/2;}
+ ball(x,y,r,id,rotation=0,cosmetics={}){
+  const key=[id,r,cosmetics.hat||'',cosmetics.accessory||''].join(':');let sprite=this.ballSprites.get(key);
+  if(!sprite){sprite=document.createElement('canvas');sprite.width=sprite.height=Math.ceil(r*6);const previous=this.ctx;try{this.ctx=sprite.getContext('2d');this.drawBall(r*3,r*3,r,id,0,cosmetics);}finally{this.ctx=previous;}if(this.ballSprites.size>=24)this.ballSprites.clear();this.ballSprites.set(key,sprite);}
+  const c=this.ctx;c.save();c.translate(x,y);c.rotate(rotation);c.drawImage(sprite,-r*3,-r*3,r*6,r*6);c.restore();
+ }
+ drawBall(x,y,r,id,rotation=0,cosmetics={}){const c=this.ctx;c.save();c.translate(x,y);c.rotate(rotation);c.shadowColor='#71ffd360';c.shadowBlur=22;c.beginPath();c.arc(0,0,r,0,Math.PI*2);c.fillStyle='#080c17';c.fill();c.shadowBlur=0;c.save();c.clip();const img=this.images[id];if(img?.complete&&img.naturalWidth){const ar=img.naturalWidth/img.naturalHeight;c.drawImage(img,-r*ar,-r,r*2*ar,r*2);}let g=this.shades.get(r);if(!g){g=c.createRadialGradient(-r*.4,-r*.4,0,0,0,r*1.1);g.addColorStop(0,'#ffffff55');g.addColorStop(.45,'#ffffff00');g.addColorStop(1,'#00000066');this.shades.set(r,g);}c.fillStyle=g;c.fillRect(-r,-r,2*r,2*r);c.restore();c.strokeStyle='#eefaff';c.lineWidth=5;c.stroke();for(const slot of ['accessory','hat']){const overlay=this.cosmeticImages[cosmetics[slot]];if(overlay?.complete&&overlay.naturalWidth)c.drawImage(overlay,-2*r,-2.4*r,4*r,4*r);}c.restore();}
  clearEffects(){while(this.effects.length)this.effectPool.push(this.effects.pop());this.lastDraw=null;}
  burst(x,y,text,color){for(let i=0;i<10&&this.effects.length<100;i++){const p=this.effectPool.pop()||{};p.x=x;p.y=y;p.vx=i===9?0:(Math.random()-.5)*400;p.vy=i===9?-140:(Math.random()-.7)*400;p.life=1;p.text=i===9?text:null;p.color=color;this.effects.push(p);}}
 
@@ -3752,10 +3757,11 @@ class AudioManager {
 }
 
 class AdManager {
- constructor(){this.ready=false;this.chestReady=false;this.correlated=false;this.requestId=null;this.sequence=0;this.pending=null;this.rewardTimer=null;window.addEventListener('native-ad',e=>{const d=e.detail;if(!d||typeof d!=='object')return;if(d.type==='ready'){this.ready=d.rewarded===true;this.chestReady=d.protocol>=3&&d.chestRewarded===true;this.correlated=d.protocol>=2;}const matches=!this.correlated||d.requestId===this.requestId;if(d.type==='reward'&&matches)this.settle(true);if((d.type==='closed'||d.type==='failed')&&matches)this.settle(false);window.dispatchEvent(new Event('ad-state'));});}
+ constructor(){this.ready=false;this.chestReady=false;this.chestError=null;this.correlated=false;this.requestId=null;this.sequence=0;this.pending=null;this.rewardTimer=null;window.addEventListener('native-ad',e=>{const d=e.detail;if(!d||typeof d!=='object')return;if(d.type==='ready'){this.chestError=typeof d.chestError==='string'&&/^[A-Z0-9_]{1,50}$/.test(d.chestError)?d.chestError:null;this.ready=d.rewarded===true;this.chestReady=d.protocol>=3&&d.chestRewarded===true;this.correlated=d.protocol>=2;}const matches=!this.correlated||d.requestId===this.requestId;if(d.type==='reward'&&matches)this.settle(true);if((d.type==='closed'||d.type==='failed')&&matches)this.settle(false);window.dispatchEvent(new Event('ad-state'));});}
  settle(earned){if(!this.pending)return;clearTimeout(this.rewardTimer);this.rewardTimer=null;const resolve=this.pending;this.pending=null;this.requestId=null;resolve(earned);}
  sync(){try{window.AndroidAds?.status();}catch{this.ready=false;}}
  reward(runId='',uid='',placement='continue'){const chest=placement==='chest';if(!(chest?this.chestReady:this.ready)||this.pending)return Promise.resolve(false);if(chest)this.chestReady=false;else this.ready=false;return new Promise(resolve=>{this.pending=resolve;this.requestId=String(++this.sequence)+'-'+Date.now();this.rewardTimer=setTimeout(()=>{this.settle(false);this.sync();window.dispatchEvent(new Event('ad-state'));},180000);try{if(chest)window.AndroidAds.chest(runId||'',uid||'',this.requestId);else if(this.correlated)window.AndroidAds.rewarded(runId||'',uid||'',this.requestId);else window.AndroidAds.rewarded(runId||'',uid||'');}catch{this.settle(false);}});}
+ playing(active){try{window.AndroidAds?.playing?.(Boolean(active));}catch{}}
  interstitial(){/* Disabled; legacy callers may safely invoke this no-op. */}
  privacy(){try{window.AndroidAds?.privacy();}catch{}}
 }
@@ -3941,22 +3947,23 @@ class PurchaseManager {
 
 
 class ChestManager {
- constructor(save,online,ads){this.save=save;this.online=online;this.ads=ads;this.status=null;this.busy=false;this.notice=null;this.earnedAmount=0;}
+ constructor(save,online,ads){this.save=save;this.online=online;this.ads=ads;this.status=null;this.busy=false;this.notice=null;this.earnedAmount=0;this.lastError=null;}
  async refresh(){
   if(!ONLINE.enabled)return null;
   const result=await this.online.api('chestStatus');
   if(result.uid!==this.online.auth?.uid)return null;
-  this.status=result;this.save.applyChestRewards(result.uid,result.totalReward);return result;
+  this.lastError=null;this.status=result;this.save.applyChestRewards(result.uid,result.totalReward);return result;
  }
  async open(){
   if(this.busy)return;
-  if(!ONLINE.enabled||!this.ads.chestReady){this.notice='chestUnavailable';return;}
-  this.busy=true;this.notice=null;
+  if(!ONLINE.enabled){this.notice='setupRequired';return;}
+  this.busy=true;this.notice=null;this.lastError=null;
   try{
-   await this.online.flush();await this.online.accountInfo();
+   await this.online.flush();const account=await this.online.accountInfo();if(account&&account.emailVerified===false){this.notice='verifyEmailHint';return;}
    const current=await this.refresh();
    if(!current||current.remaining<=0){this.notice='chestLimit';return;}
    if(current.eligible<=0){this.notice='chestPlayRequired';return;}
+   if(!this.ads.chestReady){this.ads.sync?.();this.notice='chestUnavailable';return;}
    const reserved=await this.online.api('reserveChest');const uid=this.online.auth.uid;
    const earned=await this.ads.reward('chest_'+reserved.id,uid,'chest');
    this.notice=earned?'chestPending':'adClosed';
@@ -3967,7 +3974,7 @@ class ChestManager {
     if(status&&status.totalReward>before){this.earnedAmount=status.totalReward-before;this.notice='chestEarned';break;}
     if(earned&&attempt<7)await new Promise(resolve=>setTimeout(resolve,2000));
    }
-  }catch(error){this.notice=({'CHEST_LIMIT':'chestLimit','CHEST_PLAY_REQUIRED':'chestPlayRequired','VERIFIED_ACCOUNT_REQUIRED':'verifyEmailHint'})[error.message]||'connectionFailed';}
+  }catch(error){const code=String(error.code||error.message||'UNKNOWN');this.lastError=/^[A-Z][A-Z0-9_ -]{0,90}$/.test(code)?code:'REQUEST_FAILED';this.notice=({'SIGN_IN_REQUIRED':'sessionSignInAgain','CHEST_LIMIT':'chestLimit','CHEST_PLAY_REQUIRED':'chestPlayRequired','VERIFIED_ACCOUNT_REQUIRED':'verifyEmailHint'})[error.message]||'connectionFailed';}
   finally{this.busy=false;}
  }
 }
@@ -4019,7 +4026,7 @@ function checkpoint(){
  save.data.active={version:runVersion,seed:world.seed,flaps:[...world.flaps],ticks:world.tick,score:world.score,reviveTick,session,ballId:runBall,startBest,savedAt:Date.now()};
  lastCheckpoint=world.tick;state==='playing'?save.autosave():save.write();
 }
-function show(name,html){const changed=state!==name;state=name;screen.dataset.view=name;screen.innerHTML=html;if(changed)screen.scrollTop=0;$('hud').hidden=name!=='playing'&&name!=='ready';document.documentElement.lang=save.data.language==='zh'?'zh-Hans':save.data.language;$('save-warning').textContent=t('storageWarning');$('pause').setAttribute('aria-label',t('pause'));$('game').setAttribute('aria-label',t('gameLabel'));}
+function show(name,html){const changed=state!==name;state=name;screen.dataset.view=name;screen.innerHTML=html;document.body.dataset.playing=String(name==='playing'||name==='ready');if(changed)ads.playing?.(name==='playing'||name==='ready');if(changed)screen.scrollTop=0;$('hud').hidden=name!=='playing'&&name!=='ready';document.documentElement.lang=save.data.language==='zh'?'zh-Hans':save.data.language;$('save-warning').textContent=t('storageWarning');$('pause').setAttribute('aria-label',t('pause'));$('game').setAttribute('aria-label',t('gameLabel'));}
 function hud(){if(!world)return;if($('score').textContent!==String(world.score))$('score').textContent=world.score;if(hudCoins!==world.coins){hudCoins=world.coins;$('run-coins').innerHTML=`${icon('coin')} ${world.coins}`;}const speed=`${t('speed')} ×${(world.speed/GAME.initialSpeed).toFixed(2)}`;if(hudSpeed!==speed){hudSpeed=speed;$('speed').textContent=speed;}}
 // This gate belongs to the current page/app session; it never touches player storage.
 let introLeaving=false;
@@ -4063,10 +4070,10 @@ function shop(category=shopTab,preview=null){
  <div class="collection shop-grid">${!character?`<button class="ball-card" data-action="shop-preview" data-id="none"><span class="empty-cosmetic">∅</span><strong>${t('none')}</strong></button>`:''}${cards.map(c=>{const has=character?save.data.unlocked.includes(c.id):save.ownsCosmetic(c.id),active=character?save.data.selected===c.id:save.data.equipped[shopTab]===c.id;return `<button class="ball-card ${c.premium?'premium-item':''} ${active?'selected':''} ${shopPreview===c.id?'previewing':''}" data-action="shop-preview" data-id="${c.id}" aria-pressed="${shopPreview===c.id}">${c.premium?`<span class="premium-tag">✦ ${t('premium')}</span>`:''}${avatarHtml(character?c.id:save.data.selected,character?save.data.equipped:{...save.data.equipped,[shopTab]:c.id})}<strong>${escapeHtml(character?countryLabel(c.id):t(c.id))}</strong><small>${active?icon('check')+' '+t('selected'):has?t('select'):icon('lock')+' '+escapeHtml(cost(c))}</small></button>`;}).join('')}</div>`);
 }
 function renderChests(){
- const info=chests.status,ready=Boolean(ONLINE.enabled&&ads.chestReady&&info?.remaining>0&&info?.eligible>0&&!chests.busy);
- show('chests',`${header('dailyChests')}<div class="card chest-card"><div class="chest-art" aria-hidden="true">${icon('coin')}</div><h2>${t('chestPrizes')}</h2><p class="muted">${t('chestRules')}</p><p class="muted">${t('chestOdds')}</p><div class="stats"><div><strong>${info?.remaining??5}/5</strong><small>${t('chestsLeft')}</small></div><div><strong>${info?.needed??30}</strong><small>${t('chestNeed')}</small></div></div><p class="muted">${t('chestReset')}</p>${!ONLINE.enabled?`<p class="purchase-notice">${t('setupRequired')}</p>`:!ads.chestReady?`<p class="purchase-notice">${t('chestUnavailable')}</p>`:''}<button class="primary wide" data-action="open-chest" ${ready?'':'disabled'}>${t(chests.busy?'chestPending':'watchChest')}</button>${chests.notice?`<p class="purchase-notice" role="status">${t(chests.notice,{amount:chests.earnedAmount})}</p>`:''}<button class="text-button" data-action="chests">${t('refresh')}</button><button class="text-button" data-action="account">${t('account')}</button></div>`);
+ const info=chests.status?.uid===online.auth?.uid?chests.status:null,ready=!chests.busy;
+ show('chests',`${header('dailyChests')}<div class="card chest-card"><div class="chest-art" aria-hidden="true">${icon('coin')}</div><h2>${t('chestPrizes')}</h2><p class="muted">${t('chestRules')}</p><p class="muted">${t('chestOdds')}</p><div class="stats"><div><strong>${info?.remaining??5}/5</strong><small>${t('chestsLeft')}</small></div><div><strong>${info?.needed??30}</strong><small>${t('chestNeed')}</small></div></div><p class="muted">${t('chestReset')}</p>${!ONLINE.enabled?`<p class="purchase-notice">${t('setupRequired')}</p>`:!ads.chestReady?`<p class="purchase-notice">${t('chestUnavailable')}${ads.chestError?' · '+escapeHtml(ads.chestError):''}</p>`:''}<button class="primary wide" data-action="open-chest" ${ready?'':'disabled'}>${t(chests.busy?'chestPending':!online.hasUsableSession()?'account':!ads.chestReady?'refresh':'watchChest')}</button>${chests.notice?`<p class="purchase-notice" role="status">${t(chests.notice,{amount:chests.earnedAmount})}</p>`:''}${chests.lastError?`<p class="muted">${escapeHtml(chests.lastError)}</p>`:''}<button class="text-button" data-action="chests">${t('refresh')}</button><button class="text-button" data-action="account">${t('account')}</button></div>`);
 }
-async function chestScreen(){submit();renderChests();ads.sync();try{await online.flush();await chests.refresh();}catch(error){chests.notice=error.code==='SIGN_IN_REQUIRED'?'sessionSignInAgain':'connectionFailed';}if(state==='chests')renderChests();}
+async function chestScreen(){submit();renderChests();ads.sync();try{await online.flush();await chests.refresh();}catch(error){const code=String(error.code||error.message||'REQUEST_FAILED');chests.lastError=/^[A-Z][A-Z0-9_ -]{0,90}$/.test(code)?code:'REQUEST_FAILED';chests.notice=code==='SIGN_IN_REQUIRED'?'sessionSignInAgain':'connectionFailed';}if(state==='chests')renderChests();}
 let countryReturn='home',languageReturn='home',settingsNameDraft=null;
 function countryPicker(){if(state!=='countries')countryReturn=state==='settings'?'settings':'home';show('countries',`${header('chooseCountry',countryReturn)}<p class="muted shop-hint">${t('countryHint')}</p><div class="collection">${COUNTRIES.filter(c=>c.flag).map(c=>`<button class="ball-card ${save.data.selectedCountry===c.id?'selected':''}" data-action="country" data-id="${c.id}" aria-pressed="${save.data.selectedCountry===c.id}"><div class="mini-ball">${ballHtml(c.id)}</div><strong>${escapeHtml(countryLabel(c.id))}</strong><small>${save.data.selectedCountry===c.id?icon('check')+' '+t('selected'):t('select')}</small></button>`).join('')}</div>`);}
 function languageOptions(){return LANGUAGES.map(l=>`<button class="language-option ${save.data.language===l.id?'active':''}" data-action="language" data-lang="${l.id}" aria-pressed="${save.data.language===l.id}"><span>${l.short}</span>${l.name}${save.data.language===l.id?icon('check'):''}</button>`).join('');}
@@ -4137,7 +4144,7 @@ screen.addEventListener('click',async e=>{
  case 'shop-tab':shop(b.dataset.tab);screen.scrollTop=0;break;
  case 'shop-preview':shop(shopTab,b.dataset.id);screen.scrollTop=0;break;
  case 'chests':await chestScreen();break;
- case 'open-chest':{const opening=chests.open();renderChests();await opening;if(state==='chests')renderChests();break;}
+ case 'open-chest':{if(!online.hasUsableSession()){accountScreen();break;}const opening=chests.open();renderChests();await opening;if(state==='chests')renderChests();break;}
  case 'shop-buy':{const id=b.dataset.id;const item=cosmeticById(id);const result=shopTab==='characters'?{'UNKNOWN BALL':'unknownBall','SELECTED':'selected','NOT ENOUGH COINS':'notEnough','UNLOCKED':'unlocked'}[save.unlock(id)]:item?.premium&&save.ownsCosmetic(id)?(save.equip(item.slot,id)?'selected':'unknownItem'):save.buyCosmetic(id);shop(shopTab,id);toast(t(result));if(result==='unlocked'||result==='itemUnlocked')audio.play('unlock');break;}
  case 'unequip':save.equip(b.dataset.slot,null);shop(shopTab,'none');break;
  case 'countries':countryPicker();break;
