@@ -114,9 +114,19 @@ button:disabled{cursor:default;opacity:.55}button,.ball-card,header h2{overflow-
 .identity-row .selected-ball-preview,.identity-row .selected-ball-preview .avatar{width:84px;height:84px;flex-basis:84px;}
 .identity-row .selected-ball-label{gap:3px;flex:0;}.identity-row .selected-ball-label strong{font-size:12px}.identity-row .selected-ball-label>span{font-size:10px;}.identity-row .selected-ball-card>.icon{display:none;}
 @media(max-height:800px){#screen[data-view=home]{padding:16px 20px}.home-header{margin-bottom:2px}.hero{gap:8px;margin:6px 0}.wordmark h1{font-size:58px}.identity-row .cover-stage{height:124px}.identity-row .selected-ball-card{min-height:124px}.home-actions{margin-top:8px;gap:7px}.home-actions .primary{min-height:52px}.home-actions .row .secondary{min-height:44px}.home-actions .shop-entry,.home-actions .chest-entry{min-height:42px;padding:10px}.home-stats{padding:8px 0}.home-stats strong{font-size:24px}}
+
+/* 1.10.8: centered startup prompt and a single equipped-ball card. */
+.identity-row{display:flex;justify-content:center;max-width:340px;margin-inline:auto;}
+.identity-row .selected-ball-card{width:min(100%,200px);min-height:148px;padding:0 12px 12px;}
+.identity-row .selected-ball-preview,.identity-row .selected-ball-preview .avatar{width:100px;height:100px;flex-basis:100px;}
+.identity-row .selected-ball-label strong{font-size:14px;}.identity-row .selected-ball-label>span{font-size:11px;}
+.intro-caption{inset:0;display:flex;align-items:center;justify-content:center;gap:0;padding:20px;pointer-events:none;}
+.intro-prompt{width:min(100%,370px);text-align:center;}
+@media(orientation:landscape){.intro-art{background-position:center;}.intro-caption{inset:0;}}
+@media(max-height:800px){.identity-row .selected-ball-card{min-height:124px}.identity-row .selected-ball-preview,.identity-row .selected-ball-preview .avatar{width:84px;height:84px;flex-basis:84px;}}
 </style></head>
 <body><main id="app"><canvas id="game" aria-label="Flappy Balls game"></canvas><div id="hud" hidden><button id="pause" aria-label="Pause">Ⅱ</button><div class="score-stack"><strong id="score">0</strong><small id="speed"></small></div><span class="pill coin" id="run-coins">● 0</span></div><section id="screen"></section><div id="toast" role="status"></div><div id="save-warning" hidden>Storage unavailable · progress may not be saved</div></main><script>// App release metadata is separate from the saved-flight/server physics version.
-const APP = Object.freeze({version:'1.10.7',versionCode:18});
+const APP = Object.freeze({version:'1.10.8',versionCode:19});
 
 const GAME = Object.freeze({width:1080,height:1920,step:1/60,radius:48,playerX:290,gravity:2100,jump:-720,initialSpeed:405,maxSpeed:2025,speedPerScore:7,speedPerSecond:1.1,initialGap:510,minGap:380,gapPerScore:2,spacing:800,minSpacing:680,maxSpacing:820,gapJitter:32,obstacleWidth:150,margin:160,maxCenterChange:280,maxTicks:108000,version:6});
 const ONLINE = Object.freeze({projectId:'flappy-balls-5b1d7',apiKey:'AIzaSyAfwspAvpByvqNOdB83wspA9iJA2dkxdZo',baseUrl:'https://europe-west3-flappy-balls-5b1d7.cloudfunctions.net/gameApi',enabled:true});
@@ -853,6 +863,664 @@ const COUNTRIES = [
     "flag": "py.svg",
     "cost": 1500,
     "order": 102
+  },
+  {
+    "id": "ad",
+    "name": "Andorra",
+    "flag": "ad.svg",
+    "cost": 1500,
+    "order": 103
+  },
+  {
+    "id": "ag",
+    "name": "Antigua & Barbuda",
+    "flag": "ag.svg",
+    "cost": 1500,
+    "order": 104
+  },
+  {
+    "id": "am",
+    "name": "Armenia",
+    "flag": "am.svg",
+    "cost": 1500,
+    "order": 105
+  },
+  {
+    "id": "ao",
+    "name": "Angola",
+    "flag": "ao.svg",
+    "cost": 1500,
+    "order": 106
+  },
+  {
+    "id": "bb",
+    "name": "Barbados",
+    "flag": "bb.svg",
+    "cost": 1500,
+    "order": 107
+  },
+  {
+    "id": "bf",
+    "name": "Burkina Faso",
+    "flag": "bf.svg",
+    "cost": 1500,
+    "order": 108
+  },
+  {
+    "id": "bh",
+    "name": "Bahrain",
+    "flag": "bh.svg",
+    "cost": 1500,
+    "order": 109
+  },
+  {
+    "id": "bi",
+    "name": "Burundi",
+    "flag": "bi.svg",
+    "cost": 1500,
+    "order": 110
+  },
+  {
+    "id": "bj",
+    "name": "Benin",
+    "flag": "bj.svg",
+    "cost": 1500,
+    "order": 111
+  },
+  {
+    "id": "bn",
+    "name": "Brunei",
+    "flag": "bn.svg",
+    "cost": 1500,
+    "order": 112
+  },
+  {
+    "id": "bs",
+    "name": "Bahamas",
+    "flag": "bs.svg",
+    "cost": 1500,
+    "order": 113
+  },
+  {
+    "id": "bt",
+    "name": "Bhutan",
+    "flag": "bt.svg",
+    "cost": 1500,
+    "order": 114
+  },
+  {
+    "id": "bw",
+    "name": "Botswana",
+    "flag": "bw.svg",
+    "cost": 1500,
+    "order": 115
+  },
+  {
+    "id": "by",
+    "name": "Belarus",
+    "flag": "by.svg",
+    "cost": 1500,
+    "order": 116
+  },
+  {
+    "id": "bz",
+    "name": "Belize",
+    "flag": "bz.svg",
+    "cost": 1500,
+    "order": 117
+  },
+  {
+    "id": "cf",
+    "name": "Central African Republic",
+    "flag": "cf.svg",
+    "cost": 1500,
+    "order": 118
+  },
+  {
+    "id": "cg",
+    "name": "Congo - Brazzaville",
+    "flag": "cg.svg",
+    "cost": 1500,
+    "order": 119
+  },
+  {
+    "id": "ci",
+    "name": "Côte d’Ivoire",
+    "flag": "ci.svg",
+    "cost": 1500,
+    "order": 120
+  },
+  {
+    "id": "cu",
+    "name": "Cuba",
+    "flag": "cu.svg",
+    "cost": 1500,
+    "order": 121
+  },
+  {
+    "id": "cv",
+    "name": "Cape Verde",
+    "flag": "cv.svg",
+    "cost": 1500,
+    "order": 122
+  },
+  {
+    "id": "dj",
+    "name": "Djibouti",
+    "flag": "dj.svg",
+    "cost": 1500,
+    "order": 123
+  },
+  {
+    "id": "dm",
+    "name": "Dominica",
+    "flag": "dm.svg",
+    "cost": 1500,
+    "order": 124
+  },
+  {
+    "id": "er",
+    "name": "Eritrea",
+    "flag": "er.svg",
+    "cost": 1500,
+    "order": 125
+  },
+  {
+    "id": "fj",
+    "name": "Fiji",
+    "flag": "fj.svg",
+    "cost": 1500,
+    "order": 126
+  },
+  {
+    "id": "fm",
+    "name": "Micronesia",
+    "flag": "fm.svg",
+    "cost": 1500,
+    "order": 127
+  },
+  {
+    "id": "ga",
+    "name": "Gabon",
+    "flag": "ga.svg",
+    "cost": 1500,
+    "order": 128
+  },
+  {
+    "id": "gd",
+    "name": "Grenada",
+    "flag": "gd.svg",
+    "cost": 1500,
+    "order": 129
+  },
+  {
+    "id": "gm",
+    "name": "Gambia",
+    "flag": "gm.svg",
+    "cost": 1500,
+    "order": 130
+  },
+  {
+    "id": "gn",
+    "name": "Guinea",
+    "flag": "gn.svg",
+    "cost": 1500,
+    "order": 131
+  },
+  {
+    "id": "gq",
+    "name": "Equatorial Guinea",
+    "flag": "gq.svg",
+    "cost": 1500,
+    "order": 132
+  },
+  {
+    "id": "gt",
+    "name": "Guatemala",
+    "flag": "gt.svg",
+    "cost": 1500,
+    "order": 133
+  },
+  {
+    "id": "gw",
+    "name": "Guinea-Bissau",
+    "flag": "gw.svg",
+    "cost": 1500,
+    "order": 134
+  },
+  {
+    "id": "gy",
+    "name": "Guyana",
+    "flag": "gy.svg",
+    "cost": 1500,
+    "order": 135
+  },
+  {
+    "id": "hn",
+    "name": "Honduras",
+    "flag": "hn.svg",
+    "cost": 1500,
+    "order": 136
+  },
+  {
+    "id": "ht",
+    "name": "Haiti",
+    "flag": "ht.svg",
+    "cost": 1500,
+    "order": 137
+  },
+  {
+    "id": "il",
+    "name": "Israel",
+    "flag": "il.svg",
+    "cost": 1500,
+    "order": 138
+  },
+  {
+    "id": "jm",
+    "name": "Jamaica",
+    "flag": "jm.svg",
+    "cost": 1500,
+    "order": 139
+  },
+  {
+    "id": "kg",
+    "name": "Kyrgyzstan",
+    "flag": "kg.svg",
+    "cost": 1500,
+    "order": 140
+  },
+  {
+    "id": "kh",
+    "name": "Cambodia",
+    "flag": "kh.svg",
+    "cost": 1500,
+    "order": 141
+  },
+  {
+    "id": "ki",
+    "name": "Kiribati",
+    "flag": "ki.svg",
+    "cost": 1500,
+    "order": 142
+  },
+  {
+    "id": "km",
+    "name": "Comoros",
+    "flag": "km.svg",
+    "cost": 1500,
+    "order": 143
+  },
+  {
+    "id": "kn",
+    "name": "St. Kitts & Nevis",
+    "flag": "kn.svg",
+    "cost": 1500,
+    "order": 144
+  },
+  {
+    "id": "kp",
+    "name": "North Korea",
+    "flag": "kp.svg",
+    "cost": 1500,
+    "order": 145
+  },
+  {
+    "id": "la",
+    "name": "Laos",
+    "flag": "la.svg",
+    "cost": 1500,
+    "order": 146
+  },
+  {
+    "id": "lc",
+    "name": "St. Lucia",
+    "flag": "lc.svg",
+    "cost": 1500,
+    "order": 147
+  },
+  {
+    "id": "li",
+    "name": "Liechtenstein",
+    "flag": "li.svg",
+    "cost": 1500,
+    "order": 148
+  },
+  {
+    "id": "lr",
+    "name": "Liberia",
+    "flag": "lr.svg",
+    "cost": 1500,
+    "order": 149
+  },
+  {
+    "id": "ls",
+    "name": "Lesotho",
+    "flag": "ls.svg",
+    "cost": 1500,
+    "order": 150
+  },
+  {
+    "id": "ly",
+    "name": "Libya",
+    "flag": "ly.svg",
+    "cost": 1500,
+    "order": 151
+  },
+  {
+    "id": "mc",
+    "name": "Monaco",
+    "flag": "mc.svg",
+    "cost": 1500,
+    "order": 152
+  },
+  {
+    "id": "md",
+    "name": "Moldova",
+    "flag": "md.svg",
+    "cost": 1500,
+    "order": 153
+  },
+  {
+    "id": "me",
+    "name": "Montenegro",
+    "flag": "me.svg",
+    "cost": 1500,
+    "order": 154
+  },
+  {
+    "id": "mg",
+    "name": "Madagascar",
+    "flag": "mg.svg",
+    "cost": 1500,
+    "order": 155
+  },
+  {
+    "id": "mh",
+    "name": "Marshall Islands",
+    "flag": "mh.svg",
+    "cost": 1500,
+    "order": 156
+  },
+  {
+    "id": "ml",
+    "name": "Mali",
+    "flag": "ml.svg",
+    "cost": 1500,
+    "order": 157
+  },
+  {
+    "id": "mr",
+    "name": "Mauritania",
+    "flag": "mr.svg",
+    "cost": 1500,
+    "order": 158
+  },
+  {
+    "id": "mu",
+    "name": "Mauritius",
+    "flag": "mu.svg",
+    "cost": 1500,
+    "order": 159
+  },
+  {
+    "id": "mv",
+    "name": "Maldives",
+    "flag": "mv.svg",
+    "cost": 1500,
+    "order": 160
+  },
+  {
+    "id": "mw",
+    "name": "Malawi",
+    "flag": "mw.svg",
+    "cost": 1500,
+    "order": 161
+  },
+  {
+    "id": "na",
+    "name": "Namibia",
+    "flag": "na.svg",
+    "cost": 1500,
+    "order": 162
+  },
+  {
+    "id": "ne",
+    "name": "Niger",
+    "flag": "ne.svg",
+    "cost": 1500,
+    "order": 163
+  },
+  {
+    "id": "ni",
+    "name": "Nicaragua",
+    "flag": "ni.svg",
+    "cost": 1500,
+    "order": 164
+  },
+  {
+    "id": "nr",
+    "name": "Nauru",
+    "flag": "nr.svg",
+    "cost": 1500,
+    "order": 165
+  },
+  {
+    "id": "om",
+    "name": "Oman",
+    "flag": "om.svg",
+    "cost": 1500,
+    "order": 166
+  },
+  {
+    "id": "pg",
+    "name": "Papua New Guinea",
+    "flag": "pg.svg",
+    "cost": 1500,
+    "order": 167
+  },
+  {
+    "id": "ps",
+    "name": "Palestinian Territories",
+    "flag": "ps.svg",
+    "cost": 1500,
+    "order": 168
+  },
+  {
+    "id": "pw",
+    "name": "Palau",
+    "flag": "pw.svg",
+    "cost": 1500,
+    "order": 169
+  },
+  {
+    "id": "rw",
+    "name": "Rwanda",
+    "flag": "rw.svg",
+    "cost": 1500,
+    "order": 170
+  },
+  {
+    "id": "sb",
+    "name": "Solomon Islands",
+    "flag": "sb.svg",
+    "cost": 1500,
+    "order": 171
+  },
+  {
+    "id": "sc",
+    "name": "Seychelles",
+    "flag": "sc.svg",
+    "cost": 1500,
+    "order": 172
+  },
+  {
+    "id": "sl",
+    "name": "Sierra Leone",
+    "flag": "sl.svg",
+    "cost": 1500,
+    "order": 173
+  },
+  {
+    "id": "sm",
+    "name": "San Marino",
+    "flag": "sm.svg",
+    "cost": 1500,
+    "order": 174
+  },
+  {
+    "id": "so",
+    "name": "Somalia",
+    "flag": "so.svg",
+    "cost": 1500,
+    "order": 175
+  },
+  {
+    "id": "sr",
+    "name": "Suriname",
+    "flag": "sr.svg",
+    "cost": 1500,
+    "order": 176
+  },
+  {
+    "id": "ss",
+    "name": "South Sudan",
+    "flag": "ss.svg",
+    "cost": 1500,
+    "order": 177
+  },
+  {
+    "id": "st",
+    "name": "São Tomé & Príncipe",
+    "flag": "st.svg",
+    "cost": 1500,
+    "order": 178
+  },
+  {
+    "id": "sv",
+    "name": "El Salvador",
+    "flag": "sv.svg",
+    "cost": 1500,
+    "order": 179
+  },
+  {
+    "id": "sy",
+    "name": "Syria",
+    "flag": "sy.svg",
+    "cost": 1500,
+    "order": 180
+  },
+  {
+    "id": "sz",
+    "name": "Eswatini",
+    "flag": "sz.svg",
+    "cost": 1500,
+    "order": 181
+  },
+  {
+    "id": "td",
+    "name": "Chad",
+    "flag": "td.svg",
+    "cost": 1500,
+    "order": 182
+  },
+  {
+    "id": "tg",
+    "name": "Togo",
+    "flag": "tg.svg",
+    "cost": 1500,
+    "order": 183
+  },
+  {
+    "id": "tj",
+    "name": "Tajikistan",
+    "flag": "tj.svg",
+    "cost": 1500,
+    "order": 184
+  },
+  {
+    "id": "tl",
+    "name": "Timor-Leste",
+    "flag": "tl.svg",
+    "cost": 1500,
+    "order": 185
+  },
+  {
+    "id": "tm",
+    "name": "Turkmenistan",
+    "flag": "tm.svg",
+    "cost": 1500,
+    "order": 186
+  },
+  {
+    "id": "to",
+    "name": "Tonga",
+    "flag": "to.svg",
+    "cost": 1500,
+    "order": 187
+  },
+  {
+    "id": "tt",
+    "name": "Trinidad & Tobago",
+    "flag": "tt.svg",
+    "cost": 1500,
+    "order": 188
+  },
+  {
+    "id": "tv",
+    "name": "Tuvalu",
+    "flag": "tv.svg",
+    "cost": 1500,
+    "order": 189
+  },
+  {
+    "id": "va",
+    "name": "Vatican City",
+    "flag": "va.svg",
+    "cost": 1500,
+    "order": 190
+  },
+  {
+    "id": "vc",
+    "name": "St. Vincent & Grenadines",
+    "flag": "vc.svg",
+    "cost": 1500,
+    "order": 191
+  },
+  {
+    "id": "vu",
+    "name": "Vanuatu",
+    "flag": "vu.svg",
+    "cost": 1500,
+    "order": 192
+  },
+  {
+    "id": "ws",
+    "name": "Samoa",
+    "flag": "ws.svg",
+    "cost": 1500,
+    "order": 193
+  },
+  {
+    "id": "ye",
+    "name": "Yemen",
+    "flag": "ye.svg",
+    "cost": 1500,
+    "order": 194
+  },
+  {
+    "id": "zm",
+    "name": "Zambia",
+    "flag": "zm.svg",
+    "cost": 1500,
+    "order": 195
+  },
+  {
+    "id": "zw",
+    "name": "Zimbabwe",
+    "flag": "zw.svg",
+    "cost": 1500,
+    "order": 196
   }
 ];
 const validSelectedCountry=id=>typeof id==='string'&&id!=='black'&&COUNTRIES.some(c=>c.id===id);
@@ -3314,7 +3982,7 @@ function show(name,html){const changed=state!==name;state=name;screen.dataset.vi
 function hud(){if(!world)return;if($('score').textContent!==String(world.score))$('score').textContent=world.score;if(hudCoins!==world.coins){hudCoins=world.coins;$('run-coins').innerHTML=`${icon('coin')} ${world.coins}`;}const speed=`${t('speed')} ×${(world.speed/GAME.initialSpeed).toFixed(2)}`;if(hudSpeed!==speed){hudSpeed=speed;$('speed').textContent=speed;}}
 // This gate belongs to the current page/app session; it never touches player storage.
 let introLeaving=false;
-function intro(){show('intro',`<button class="intro-start" data-action="intro-start" aria-label="${t('tapToStart')}"><span class="intro-art" role="img" aria-label="Hopewing Games · Flappy Balls"></span><span class="intro-caption"><span class="intro-game">Flappy Balls</span><span class="intro-prompt">${t('tapToStart')}${icon('arrow')}</span><span class="intro-credit">Hopewing Games</span></span></button>`);}
+function intro(){show('intro',`<button class="intro-start" data-action="intro-start" aria-label="${t('tapToStart')}"><span class="intro-art" role="img" aria-label="Hopewing Games · Flappy Balls"></span><span class="intro-caption"><span class="intro-prompt">${t('tapToStart')}</span></span></button>`);}
 async function enterMenu(){
  if(state!=='intro'||introLeaving)return;
  introLeaving=true;screen.classList.add('intro-leaving');
@@ -3326,7 +3994,7 @@ async function enterMenu(){
 function home(){
  generation++;audio.stopPraise();checkpoint();submit();world=null;session=null;
  const saved=save.data.active;screen.dataset.resumable=Boolean(saved);const lang=LANGUAGES.find(l=>l.id===save.data.language),country=save.data.selectedCountry||save.data.country;
- show('home',`<header class="home-header"><div class="header-tools"><button class="icon-button home-settings" data-action="settings" aria-label="${t('settings')}">${icon('settings')}</button><button class="language-pill" data-action="languages" aria-label="${t('language')}">${icon('globe')}${lang.short}</button><span class="pill coin">${icon('coin')}${save.data.coins}</span></div></header><div class="hero"><div class="wordmark"><span class="title-spark" aria-hidden="true">✦</span><h1 aria-label="FLAPPY BALLS"><span class="title-top">FLAPPY</span><span class="title-bottom">BALLS<span class="title-dot">.</span></span></h1><span class="title-streak" aria-hidden="true"></span></div><p class="hero-tagline">${t('represent')}</p><div class="identity-row"><button class="cover-stage" data-action="shop" aria-label="${t('shop')}"><span class="cover-art" role="img" aria-label="Flappy Balls · space adventure"></span></button><button class="selected-ball-card" data-action="shop"><span class="selected-ball-preview">${avatarHtml()}</span><span class="selected-ball-label"><strong>${t('yourBall')}</strong><span>${escapeHtml(countryLabel(save.data.selected))}</span></span>${icon('arrow')}</button></div><button data-action="countries" class="country-chip">${country?flagHtml(country):icon('globe')}<span>${country?escapeHtml(countryLabel(country)):t('chooseCountry')}</span></button><div class="stats home-stats"><div>${icon('trophy')}<strong>${save.data.best}</strong><small>${t('bestScore')}</small></div><div>${icon('globe')}<strong>${save.data.unlocked.length-1}<em>/${COUNTRY_TOTAL}</em></strong><small>${t('countries')}</small></div></div></div><div class="actions home-actions">${saved?`<p class="saved-label">${icon('save')}${t('savedScore',{score:saved.score||0})}</p><button class="primary" data-action="restore"><span>${icon('resume')}${t('resume')}</span>${icon('arrow')}</button><button class="text-button" data-action="play">${t('newRun')}</button>`:`<button class="primary" data-action="play"><span>${icon('play')}${t('play')}</span>${icon('arrow')}</button>`}<div class="row"><button class="secondary" data-action="collection">${icon('ball')}<span>${t('collection')}</span></button><button class="secondary" data-action="leaderboard">${icon('trophy')}<span>${t('ranking')}</span></button></div><button class="secondary shop-entry" data-action="shop">${icon('coin')}${t('shop')}</button><button class="secondary chest-entry" data-action="chests">${icon('coin')}${t('dailyChests')}</button></div><p class="footer">${t('footer')}</p>`);
+ show('home',`<header class="home-header"><div class="header-tools"><button class="icon-button home-settings" data-action="settings" aria-label="${t('settings')}">${icon('settings')}</button><button class="language-pill" data-action="languages" aria-label="${t('language')}">${icon('globe')}${lang.short}</button><span class="pill coin">${icon('coin')}${save.data.coins}</span></div></header><div class="hero"><div class="wordmark"><span class="title-spark" aria-hidden="true">✦</span><h1 aria-label="FLAPPY BALLS"><span class="title-top">FLAPPY</span><span class="title-bottom">BALLS<span class="title-dot">.</span></span></h1><span class="title-streak" aria-hidden="true"></span></div><p class="hero-tagline">${t('represent')}</p><div class="identity-row"><button class="selected-ball-card" data-action="shop"><span class="selected-ball-preview">${avatarHtml()}</span><span class="selected-ball-label"><strong>${t('yourBall')}</strong><span>${escapeHtml(countryLabel(save.data.selected))}</span></span>${icon('arrow')}</button></div><button data-action="countries" class="country-chip">${country?flagHtml(country):icon('globe')}<span>${country?escapeHtml(countryLabel(country)):t('chooseCountry')}</span></button><div class="stats home-stats"><div>${icon('trophy')}<strong>${save.data.best}</strong><small>${t('bestScore')}</small></div><div>${icon('globe')}<strong>${save.data.unlocked.length-1}<em>/${COUNTRY_TOTAL}</em></strong><small>${t('countries')}</small></div></div></div><div class="actions home-actions">${saved?`<p class="saved-label">${icon('save')}${t('savedScore',{score:saved.score||0})}</p><button class="primary" data-action="restore"><span>${icon('resume')}${t('resume')}</span>${icon('arrow')}</button><button class="text-button" data-action="play">${t('newRun')}</button>`:`<button class="primary" data-action="play"><span>${icon('play')}${t('play')}</span>${icon('arrow')}</button>`}<div class="row"><button class="secondary" data-action="collection">${icon('ball')}<span>${t('collection')}</span></button><button class="secondary" data-action="leaderboard">${icon('trophy')}<span>${t('ranking')}</span></button></div><button class="secondary shop-entry" data-action="shop">${icon('coin')}${t('shop')}</button><button class="secondary chest-entry" data-action="chests">${icon('coin')}${t('dailyChests')}</button></div><p class="footer">${t('footer')}</p>`);
 }
 function ready(resuming=false){frameClock.reset();show('ready',`<div class="message ready-card"><span class="badge">${session?t('globalRun'):t('offlineRun')}</span><h2>${resuming?t('tapContinue'):t('tapFly')}</h2><p>${resuming?t('breather'):t('howTo')}</p><button class="primary" data-action="fly"><span>${icon('play')}${resuming?t('continue'):t('letsGo')}</span>${icon('arrow')}</button></div>`);hud();checkpoint();}
 async function start(){submit();save.data.active=null;save.write();const current=++generation;audio.activate();show('loading',`${header('getReady')}<p class="message">${t('preparing')}</p>`);const started=await online.start();if(current!==generation)return;runVersion=GAME.version;session=started;world=new World(started?.seed??crypto.getRandomValues(new Uint32Array(1))[0]);reviveTick=null;startBest=save.data.best;runBall=save.data.selected;record=false;queued=false;flap=false;accumulator=0;lastCheckpoint=0;renderer.clearEffects();audio.resetMilestones();ready();}
